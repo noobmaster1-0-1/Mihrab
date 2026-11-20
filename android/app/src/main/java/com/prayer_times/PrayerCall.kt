@@ -166,22 +166,8 @@ class PrayerCallConnectionService : ConnectionService() {
         fullScreenIntent,
         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
       )
-      // Android 14+ rejects CallStyle notifications unless they are posted
-      // by a foreground service or carry a full-screen intent. Telecom binds
-      // this ConnectionService, but that binding alone does not make it a
-      // foreground service. Use the app's existing entry activity as the
-      // full-screen fallback; when unlocked Android still shows the heads-up
-      // CallStyle notification, while a locked device can surface the alert.
-      val fullScreenIntent = PendingIntent.getActivity(
-        context,
-        NOTIFICATION_BASE + callId.hashCode().and(0x7fff),
-        Intent(context, MainActivity::class.java).apply {
-          addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        },
-        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-      )
       val builder = Notification.Builder(context, CHANNEL_ID)
-        .setFullScreenIntent(fullScreenIntent, true)
+        .setFullScreenIntent(fullScreenPendingIntent, true)
         .setSmallIcon(R.drawable.ic_stat_prayer)
         .setContentTitle(if (isTest) "Prayer alert test" else prayer)
         .setContentText(if (isTest) "Testing watch call controls" else "Prayer time")
