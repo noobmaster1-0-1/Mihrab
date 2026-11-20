@@ -260,6 +260,8 @@ export type PrayerAppSettings = {
    * global sound picker keeps working for everyone who never does.
    */
   prayerAlertModes: AlertModeMap;
+  /** Android incoming-call style alert, independently enabled per salah. */
+  prayerCallAlerts: Partial<Record<'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha', boolean>>;
   /**
    * ANDROID: play the adhan through the alarm stream, so the ringer switch
    * does not silence it (issue #9).
@@ -839,6 +841,7 @@ export const DEFAULT_SETTINGS: PrayerAppSettings = {
   prayerSilence: { ...DEFAULT_PRAYER_SILENCE },
   garminWatch: { ...DEFAULT_GARMIN_WATCH },
   prayerAlertModes: {},
+  prayerCallAlerts: {},
   androidWidgetBackgroundOpacity: 88,
   widgetHighlightId: 'green',
   widgetHighlightCustomHex: '#6BC98A',

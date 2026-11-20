@@ -130,8 +130,10 @@ class PrayerAlarmActivity : Activity() {
     // can mirror; its Answer action writes through the existing journal task.
     val prayer = notification.getString("title").orEmpty()
     val targetDate = data.getString("targetDate").orEmpty()
-    if (prayer in listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")) {
-      PrayerCallConnectionService.showIncoming(this, prayer, targetDate, id)
+    if (data.getString("callAlert") == "1" &&
+      prayer in listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+    ) {
+      runCatching { PrayerCallConnectionService.showIncoming(this, prayer, targetDate, id) }
     }
     setContentView(buildView(notification, data))
 

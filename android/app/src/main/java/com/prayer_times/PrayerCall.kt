@@ -102,7 +102,7 @@ class PrayerCallConnectionService : ConnectionService() {
         putString(EXTRA_NOTIFICATION_ID, notificationId)
         putBoolean(EXTRA_TEST, isTest)
       }
-      runCatching { telecom.addNewIncomingCall(handle, extras) }
+      telecom.addNewIncomingCall(handle, extras)
     }
 
     fun answer(context: Context, callId: String) {
@@ -246,8 +246,8 @@ class PrayerCallModule(private val reactContext: ReactApplicationContext) : Reac
     }
     runCatching {
       PrayerCallConnectionService.showIncoming(reactContext, prayer, "", "test-${System.currentTimeMillis()}", true)
-    }.onSuccess { promise.resolve(null) }
-      .onFailure { promise.reject("E_PRAYER_CALL", it) }
+      promise.resolve(null)
+    }.onFailure { promise.reject("E_PRAYER_CALL", it) }
   }
 }
 

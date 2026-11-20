@@ -16,8 +16,11 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Alert, Platform } from 'react-native';
 import { usePrayerSettings } from '../../../context/PrayerSettingsContext';
 import { useAppPalette } from '../../../hooks/useAppPalette';
+import { SettingsGroup, SettingsLinkRow, SettingsToggleRow } from '../SettingsGroup';
+import { startPrayerCallTest, prayerCallAvailable } from '../../../native/PrayerCall';
 import { LiveActivityCard } from '../LiveActivityCard';
 import { LIVE_ACTIVITY_SHOW_BEFORE_OPTIONS } from '../../../settings/prePrayerReminder';
 import { MalikiAlertsCard } from '../MalikiAlertsCard';
@@ -64,6 +67,7 @@ export function NotificationSettingsScreen() {
   );
   const [customAdhan, setCustomAdhan] = useState<CustomAdhanSound | null>(null);
   const [importingCustom, setImportingCustom] = useState(false);
+  const [testingPrayerCall, setTestingPrayerCall] = useState(false);
 
   const deferBack = useRef(false);
   deferBack.current =
@@ -137,6 +141,36 @@ export function NotificationSettingsScreen() {
   return (
     <>
       <SettingsPage deferBackRef={deferBack}>
+        {Platform.OS === 'android' && prayerCallAvailable ? (
+          <SettingsGroup
+            title={t('settings.prayerCallAlertsTitle', 'Incoming call alerts')}
+            footer={t('settings.prayerCallAlertsHelp', 'Choose which prayers also appear as incoming calls on Android. Enable Prayer alerts and Full-screen prayer alerts above. Answering logs the prayer; declining does not.')}>
+            {(['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'] as const).map(prayer => (
+              <SettingsToggleRow
+                key={prayer}
+                title={t(`prayer.${prayer}`)}
+                value={settings.prayerCallAlerts?.[prayer] === true}
+                disabled={!settings.notificationsEnabled || !settings.prayerAlertFullScreen}
+                onValueChange={enabled => updateSettings({
+                  prayerCallAlerts: { ...settings.prayerCallAlerts, [prayer]: enabled },
+                })}
+              />
+            ))}
+            <SettingsLinkRow
+              title={t('settings.prayerCallTest', 'Send a test call')}
+              value={testingPrayerCall ? t('common.loading') : t('prayer.Fajr')}
+              help={t('settings.prayerCallTestHelp', 'Sends a Fajr test call to this phone and connected notification devices. It never records a prayer.')}
+              onPress={() => {
+                if (testingPrayerCall) return;
+                setTestingPrayerCall(true);
+                void startPrayerCallTest('Fajr')
+                  .catch(() => Alert.alert(t('settings.prayerCallTest'), t('settings.prayerCallTestFailed', 'Could not start the test call. Check notification and phone permissions.')))
+                  .finally(() => setTestingPrayerCall(false));
+              }}
+              testID="prayer-call-test"
+            />
+          </SettingsGroup>
+        ) : null}
         <NotificationsCard
           onOpenSoundPicker={openSound}
           onOpenPreReminderPicker={openPreReminder}

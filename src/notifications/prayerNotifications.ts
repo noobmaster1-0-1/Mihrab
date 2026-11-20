@@ -1016,6 +1016,7 @@ async function syncPrayerNotificationsNow(params: {
           // timestamp in the notification id.
           targetDate: ymdLocal(e.at),
           prayer: e.name,
+          callAlert: settings.prayerCallAlerts?.[e.name as keyof typeof settings.prayerCallAlerts] ? '1' : '0',
           // When this prayer ends; the snooze reads it at the press.
           ...(endsAt != null ? { deadline: String(endsAt) } : {}),
           // The selected adhan's id doubles as the bundled audio base name

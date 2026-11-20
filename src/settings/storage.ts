@@ -45,6 +45,7 @@ import {
   seedLocationProviders,
 } from './locationProviders';
 import { coercePrayerOffsets } from './prayerOffsets';
+import { SALAH_KEYS } from './alertModes';
 import {
   DEFAULT_HERO_LOOK,
   DEFAULT_SETTINGS,
@@ -478,6 +479,14 @@ async function loadSettingsUncached(): Promise<PrayerAppSettings> {
   // The same kind of guard: this one turns Do Not Disturb on and off on
   // a clock, and a half-shaped blob would be read by a receiver with the
   // app closed, where there is nobody to notice.
+  const callAlerts = parsed.prayerCallAlerts;
+  merged.prayerCallAlerts = Object.fromEntries(
+    SALAH_KEYS.map(key => [
+      key,
+      !!callAlerts && typeof callAlerts === 'object' &&
+        (callAlerts as Record<string, unknown>)[key] === true,
+    ]),
+  ) as PrayerAppSettings['prayerCallAlerts'];
   merged.prayerSilence = coercePrayerSilence(parsed.prayerSilence);
   // The watch's address is typed by hand; a blob from before the setting
   // existed gets the default (off), never undefined.
