@@ -51,6 +51,8 @@
          settings. Granted at install below Android 14; from 14 the person can
          revoke it, and without it Android shows the ordinary heads-up. -->
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <!-- Self-managed Telecom account used for prayer call-style alerts. -->
+    <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <!-- "Silence the phone at prayer time" (issue #60): the app owns one
          automatic Do Not Disturb rule and turns it on and off around the
          prayers chosen. Declaring this grants nothing; the person grants
@@ -457,6 +459,17 @@
           android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
           android:value="prayerCountdown" />
       </service>
+
+      <!-- Self-managed Telecom endpoint for incoming prayer alerts. -->
+      <service
+        android:name=".PrayerCallConnectionService"
+        android:permission="android.permission.BIND_TELECOM_CONNECTION_SERVICE"
+        android:exported="true">
+        <intent-filter>
+          <action android:name="android.telecom.ConnectionService" />
+        </intent-filter>
+      </service>
+      <receiver android:name=".PrayerCallActionReceiver" android:exported="false" />
 
       <!-- Handles the "Mute next adhan" toggle action on the Live Activity
            (Android 17+). Explicit-intent broadcast from the notification action;

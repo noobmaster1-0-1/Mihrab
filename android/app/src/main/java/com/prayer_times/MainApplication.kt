@@ -49,6 +49,7 @@ class MainApplication : Application(), ReactApplication, androidx.work.Configura
           add(PrayerSilencePackage())
           add(GarminWatchPackage())
           add(FullScreenAlarmPackage())
+          add(PrayerCallPackage())
           add(CustomAdhanPackage())
           add(SecureRandomPackage())
           add(WordPlayerPackage())
