@@ -46,10 +46,8 @@ jobs:
       - name: Apply F-Droid SDK settings
         working-directory: android/app
         run: |
-          grep -E "^\\s+- sed -i 's/(SdkVersion|\"37)" ../../contrib/fdroid/com.prayer_times.yml \
-            | sed -E 's/^\\s+- //' > /tmp/fdroid-sdk.sh
-          test -s /tmp/fdroid-sdk.sh
-          sh /tmp/fdroid-sdk.sh
+          sed -i 's/SdkVersion = 37/SdkVersion = 36/' ../build.gradle
+          sed -i 's/"37.0.0"/"36.0.0"/' ../build.gradle
           grep -n "compileSdkVersion" ../build.gradle
 
       - name: Assemble APK
