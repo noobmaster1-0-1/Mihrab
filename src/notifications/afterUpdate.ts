@@ -172,6 +172,7 @@ export async function resyncPrayerAlertsFromStorage(
     notificationSound: settings.notificationSound,
     adhanUsesAlarmStream: settings.adhanUsesAlarmStream,
     prayerAlertFullScreen: settings.prayerAlertFullScreen,
+    prayerCallAlerts: settings.prayerCallAlerts,
     today: alertWeek[0],
     tomorrow: alertWeek[1],
     yesterday,
