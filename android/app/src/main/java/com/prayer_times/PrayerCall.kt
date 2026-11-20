@@ -146,12 +146,33 @@ class PrayerCallConnectionService : ConnectionService() {
       ensureChannel(context)
       val decline = actionIntent(context, ACTION_DECLINE, callId, callId.hashCode())
       val answer = actionIntent(context, ACTION_ANSWER, callId, callId.hashCode() xor 0x51A7)
+      // Android 12+ rejects a CallStyle notification unless it belongs to a
+      // foreground service or carries a full-screen intent. This connection
+      // service is not a foreground service, so provide the existing native
+      // alarm screen as the full-screen surface (also for test calls).
+      val fullScreenExtras = Bundle().apply {
+        putString("id", callId)
+        putString("title", if (isTest) "Prayer alert test" else prayer)
+        putString("body", if (isTest) "Testing watch call controls" else "Prayer time")
+        putBundle("data", Bundle())
+      }
+      val fullScreenIntent = Intent(context, PrayerAlarmActivity::class.java).apply {
+        putExtra("notification", fullScreenExtras)
+        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      }
+      val fullScreenPendingIntent = PendingIntent.getActivity(
+        context,
+        NOTIFICATION_BASE + callId.hashCode().and(0x7fff),
+        fullScreenIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+      )
       val builder = Notification.Builder(context, CHANNEL_ID)
         .setSmallIcon(R.drawable.ic_stat_prayer)
         .setContentTitle(if (isTest) "Prayer alert test" else prayer)
         .setContentText(if (isTest) "Testing watch call controls" else "Prayer time")
         .setCategory(Notification.CATEGORY_CALL)
         .setVisibility(Notification.VISIBILITY_PUBLIC)
+        .setFullScreenIntent(fullScreenPendingIntent, true)
         .setOngoing(true)
         .setAutoCancel(false)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
