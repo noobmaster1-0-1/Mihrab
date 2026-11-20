@@ -1,0 +1,68 @@
+name: Build Android APK
+
+on:
+  push:
+    branches:
+      - feature/prayer-call-watch
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build F-Droid debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Install JavaScript dependencies
+        run: npm ci --no-audit
+
+      - name: Apply F-Droid SDK settings
+        working-directory: android/app
+        run: |
+          grep -E "^\\s+- sed -i 's/(SdkVersion|\"37)" ../../contrib/fdroid/com.prayer_times.yml \
+            | sed -E 's/^\\s+- //' > /tmp/fdroid-sdk.sh
+          test -s /tmp/fdroid-sdk.sh
+          sh /tmp/fdroid-sdk.sh
+          grep -n "compileSdkVersion" ../build.gradle
+
+      - name: Assemble APK
+        working-directory: android
+        run: >-
+          ./gradlew assembleFdroidDebug
+          -PreactNativeArchitectures=arm64-v8a
+          --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: mihrab-prayer-call-debug-apk
+          path: android/app/build/outputs/apk/fdroid/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
