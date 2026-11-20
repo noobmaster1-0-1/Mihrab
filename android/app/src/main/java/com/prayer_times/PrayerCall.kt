@@ -144,7 +144,6 @@ class PrayerCallConnectionService : ConnectionService() {
 
     private fun postCallNotification(context: Context, callId: String, prayer: String, isTest: Boolean) {
       ensureChannel(context)
-      val person = Person.Builder().setName(if (isTest) "Mihrab test" else "$prayer prayer").setImportant(true).build()
       val decline = actionIntent(context, ACTION_DECLINE, callId, callId.hashCode())
       val answer = actionIntent(context, ACTION_ANSWER, callId, callId.hashCode() xor 0x51A7)
       val builder = Notification.Builder(context, CHANNEL_ID)
@@ -156,6 +155,7 @@ class PrayerCallConnectionService : ConnectionService() {
         .setOngoing(true)
         .setAutoCancel(false)
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        val person = Person.Builder().setName(if (isTest) "Mihrab test" else "$prayer prayer").setImportant(true).build()
         builder.setStyle(Notification.CallStyle.forIncomingCall(person, decline, answer))
       } else {
         builder.addAction(0, "Decline", decline)
