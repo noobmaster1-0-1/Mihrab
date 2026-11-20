@@ -1,0 +1,63 @@
+name: Build Android APK
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build installable F-Droid APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: Install JavaScript dependencies
+        run: npm ci --no-audit
+
+      - name: Apply F-Droid SDK settings
+        working-directory: android/app
+        run: |
+          sed -i 's/SdkVersion = 37/SdkVersion = 36/' ../build.gradle
+          sed -i 's/"37.0.0"/"36.0.0"/' ../build.gradle
+          grep -n "compileSdkVersion" ../build.gradle
+
+      - name: Assemble APK with embedded React Native bundle
+        working-directory: android
+        run: >-
+          ./gradlew assembleFdroidRelease
+          -PreactNativeArchitectures=arm64-v8a
+          --no-daemon --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v5
+        with:
+          name: mihrab-prayer-call-debug-apk
+          path: android/app/build/outputs/apk/fdroid/release/*.apk
+          if-no-files-found: error
+          retention-days: 14

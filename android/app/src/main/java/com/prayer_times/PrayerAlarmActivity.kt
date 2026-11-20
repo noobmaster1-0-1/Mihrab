@@ -125,6 +125,16 @@ class PrayerAlarmActivity : Activity() {
     }
     notificationId = id
     val data = notification.getBundle("data") ?: Bundle()
+    // The existing full-screen alarm remains the phone UI and sound owner.
+    // Telecom adds the native incoming-call surface that companion watches
+    // can mirror; its Answer action writes through the existing journal task.
+    val prayer = notification.getString("title").orEmpty()
+    val targetDate = data.getString("targetDate").orEmpty()
+    if (data.getString("callAlert") == "1" &&
+      prayer in listOf("Fajr", "Dhuhr", "Asr", "Maghrib", "Isha")
+    ) {
+      runCatching { PrayerCallConnectionService.showIncoming(this, prayer, targetDate, id) }
+    }
     setContentView(buildView(notification, data))
 
     handler.removeCallbacksAndMessages(null)

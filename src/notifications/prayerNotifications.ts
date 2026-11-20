@@ -564,6 +564,8 @@ async function syncPrayerNotificationsNow(params: {
   /** Android: the five prayers' alerts take the whole screen when the phone
    *  is locked, like an alarm clock (issue #63). See `fullScreenAlarm.ts`. */
   prayerAlertFullScreen?: boolean;
+  /** Per-prayer Android incoming-call alerts. */
+  prayerCallAlerts?: Partial<Record<'Fajr' | 'Dhuhr' | 'Asr' | 'Maghrib' | 'Isha', boolean>>;
   today: TimingsMap;
   tomorrow?: TimingsMap;
   /**
@@ -1016,6 +1018,7 @@ async function syncPrayerNotificationsNow(params: {
           // timestamp in the notification id.
           targetDate: ymdLocal(e.at),
           prayer: e.name,
+          callAlert: params.prayerCallAlerts?.[e.name as keyof NonNullable<typeof params.prayerCallAlerts>] ? '1' : '0',
           // When this prayer ends; the snooze reads it at the press.
           ...(endsAt != null ? { deadline: String(endsAt) } : {}),
           // The selected adhan's id doubles as the bundled audio base name
